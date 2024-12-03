@@ -1,0 +1,32 @@
+[
+  {
+    "date": "23.11.2024 20.00",
+    "imo": "9159050",
+    "lat": 41.167517,
+    "long": 29.07015,
+    "mmsi": "312043000",
+    "name": "Vessel-9159050",
+    "nation": "Belize",
+    "size": "169 / 25 m",
+    "speed": "1.1 kn",
+    "status": 1,
+    "statusDetail": "Ba\u015far\u0131l\u0131",
+    "type": "Kargo",
+    "year": "2000"
+  },
+  {
+    "date": "23.11.2024 20.00",
+    "imo": "9592264",
+    "lat": 41.167517,
+    "long": 29.07015,
+    "mmsi": "538010371",
+    "name": "Vessel-9592264",
+    "nation": "Marshall Islands",
+    "size": "249 / 45 m",
+    "speed": "0.4 kn",
+    "status": 1,
+    "statusDetail": "Ba\u015far\u0131l\u0131",
+    "type": "Kargo",
+    "year": "2000"
+  }
+]
