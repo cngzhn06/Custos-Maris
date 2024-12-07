@@ -16,6 +16,7 @@ const MapWithBounds = ({ ships }) => {
         [29.5, 41.6],
       ],
       attributionControl: false,
+      preserveDrawingBuffer: true,
     });
 
     map.on("load", () => {
@@ -26,30 +27,56 @@ const MapWithBounds = ({ ships }) => {
         if (!shipGroups[key]) {
           shipGroups[key] = [];
         }
-        shipGroups[key].push({
-          lat: ship.lat,
-          long: ship.long,
-          date: ship.date,
-          name: ship.name,
-          type: ship.type,
-          status: ship.status,
-          statusDetail: ship.statusDetail,
-        });
+        shipGroups[key].push(ship);
       });
 
-      // Add markers
-      ships.forEach((ship) => {
-        const popup = new Popup().setHTML(`
-          <strong>${ship.name}</strong><br /> 
-          <strong>${ship.type}</strong><br />
-          Bayrak: ${ship.nation} <br />
-          Boyut: ${ship.size} <br />
-          Hız: ${ship.speed} <br />
-          Yıl: ${ship.year} <br />
-          saat: ${ship.date} <br />
-          MMSI: ${ship.mmsi}<br />
-          Durum: ${ship.status === 1 ? "Başarılı" : ship.statusDetail}
-        `);
+      Object.values(shipGroups).forEach((group) => {
+        group.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const coordinates = group.map((ship) => [ship.long, ship.lat]);
+        if (coordinates.length > 1) {
+          const routeId = `route-${group[0].mmsi}`;
+          map.addSource(routeId, {
+            type: "geojson",
+            data: {
+              type: "Feature",
+              geometry: {
+                type: "LineString",
+                coordinates,
+              },
+            },
+          });
+
+          map.addLayer({
+            id: routeId,
+            type: "line",
+            source: routeId,
+            paint: {
+              "line-color": "#FF5733",
+              "line-width": 3,
+              "line-opacity": 0.6,
+            },
+          });
+        }
+
+        const lastShip = group[group.length - 1];
+
+        const popupContent = `
+          ${lastShip.photoUrl ? `<div style="text-align: center;">
+            <img src="${lastShip.photoUrl}" alt="${lastShip.name}" style="width: 100%; max-width: 200px; margin-bottom: 10px;" />
+          </div>` : ""}
+          <strong>${lastShip.name}</strong><br /> 
+          <strong>${lastShip.type}</strong><br />
+          Bayrak: ${lastShip.nation} <br />
+          Boyut: ${lastShip.size} <br />
+          Hız: ${lastShip.speed} <br />
+          Yıl: ${lastShip.year} <br />
+          Tarih: ${new Date(lastShip.date).toLocaleString()} <br />
+          MMSI: ${lastShip.mmsi}<br />
+          Durum: ${lastShip.status === 1 ? "Başarılı" : lastShip.statusDetail}
+        `;
+
+        const popup = new Popup().setHTML(popupContent);
 
         const markerElement = document.createElement("img");
         markerElement.src = "ship.png";
@@ -57,49 +84,9 @@ const MapWithBounds = ({ ships }) => {
         markerElement.style.height = "16px";
 
         new Marker({ element: markerElement })
-          .setLngLat([ship.long, ship.lat])
+          .setLngLat([lastShip.long, lastShip.lat])
           .setPopup(popup)
           .addTo(map);
-      });
-
-      // Çizgiler için her geminin zaman dilimlerine göre rotalarını çizme
-      Object.values(shipGroups).forEach((group) => {
-        group.forEach((ship, index) => {
-          // Önceki ve sonraki konumlar arasındaki rotayı çizin
-          if (index < group.length - 1) {
-            const currentShip = group[index];
-            const nextShip = group[index + 1];
-
-            const coordinates = [
-              [currentShip.long, currentShip.lat], // önceki konum
-              [nextShip.long, nextShip.lat], // sonraki konum
-            ];
-
-            const routeId = `route-${currentShip.name}-${currentShip.date}-${nextShip.date}`;
-
-            map.addSource(routeId, {
-              type: "geojson",
-              data: {
-                type: "Feature",
-                geometry: {
-                  type: "LineString",
-                  coordinates,
-                },
-              },
-            });
-
-            map.addLayer({
-              id: routeId,
-              type: "line",
-              source: routeId,
-              paint: {
-                "line-color": "#FF5733", // Customize color
-                "line-width": 3,
-                "line-opacity": 0.6, // Transparanlık ekledik
-              },
-            });
-          }
-        });
       });
     });
 
@@ -108,11 +95,7 @@ const MapWithBounds = ({ ships }) => {
     };
   }, [ships]);
 
-  return (
-    <>
-      <div ref={mapContainerRef} style={{ height: "100%", width: "100%" }} />
-    </>
-  );
+  return <div ref={mapContainerRef} style={{ height: "100%", width: "100%" }} />;
 };
 
 export default MapWithBounds;
