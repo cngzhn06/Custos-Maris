@@ -17,6 +17,7 @@
     "@mui/material": "^6.1.8",
     "axios": "^1.7.8",
     "dotenv": "^16.4.6",
+    "leaflet": "^1.9.4",
     "mapbox-gl": "^3.8.0",
     "maplibre-gl": "^4.7.1",
     "react": "^18.3.1",
