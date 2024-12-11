@@ -1,99 +1,111 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Map, Marker, Popup } from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 
-const MapWithBounds = ({ ships }) => {
+const MapWithBounds = ({ ships, onMarkerClick }) => {
   const mapContainerRef = useRef(null);
+  const [mapInstance, setMapInstance] = useState(null);
+  const [currentRouteId, setCurrentRouteId] = useState(null);
 
   useEffect(() => {
     const map = new Map({
       container: mapContainerRef.current,
       style: `${import.meta.env.VITE_MAPTILER_API_KEY}`,
       center: [28.5, 41.0],
-      zoom: 7,
-      maxBounds: [
-        [26.04291, 39.04],
-        [29.5, 41.6],
-      ],
+      zoom: 3,
       attributionControl: false,
       preserveDrawingBuffer: true,
     });
 
+    setMapInstance(map);
+
     map.on("load", () => {
-      const shipGroups = {};
+      const shipsGrouped = {};
 
       ships.forEach((ship) => {
-        const key = `${ship.mmsi}-${ship.imo}`;
-        if (!shipGroups[key]) {
-          shipGroups[key] = [];
+        const key = `${ship.imo}-${ship.mmsi}`;
+        if (!shipsGrouped[key]) {
+          shipsGrouped[key] = [];
         }
-        shipGroups[key].push(ship);
+        shipsGrouped[key].push(ship);
       });
 
-      Object.values(shipGroups).forEach((group) => {
-        group.sort((a, b) => new Date(a.date) - new Date(b.date));
+      Object.values(shipsGrouped).forEach((shipGroup) => {
+        const lastShip = shipGroup[shipGroup.length - 1];
+        const popupContent = `
+          <strong>Gemi Tipi:</strong> ${lastShip.shipType}<br />
+          <strong>Hız:</strong> ${lastShip.speed} knot<br />
+          <strong>Konum:</strong> Lat: ${lastShip.lat}, Long: ${lastShip.lon}<br />
+          <strong>Yön:</strong> ${lastShip.course}°<br />
+          <strong>Başlangıç Limanı:</strong> ${lastShip.departurePort}<br />
+          <strong>Varış Limanı:</strong> ${lastShip.arrivalPortCalc}<br />
+          <strong>IMO:</strong> ${lastShip.imo}<br />
+          <strong>MMSI:</strong> ${lastShip.mmsi}<br />
+          <strong>Zaman Damgası:</strong> ${lastShip.timestamp}
+        `;
 
-        const coordinates = group.map((ship) => [ship.long, ship.lat]);
-        if (coordinates.length > 1) {
-          const routeId = `route-${group[0].mmsi}`;
+        const popup = new Popup().setHTML(popupContent);
+
+        const markerElement = document.createElement("img");
+        markerElement.src = "ship.png"; 
+        markerElement.style.width = "16px";
+        markerElement.style.height = "16px";
+
+        const marker = new Marker({ element: markerElement })
+          .setLngLat([lastShip.lon, lastShip.lat])
+          .setPopup(popup)
+          .addTo(map);
+
+        marker.getElement().addEventListener("click", () => {
+          // Tüm mevcut rotaları temizle
+          map.getStyle().layers.forEach((layer) => {
+            if (layer.id.startsWith("line-")) {
+              map.removeLayer(layer.id); 
+              map.removeSource(layer.id); 
+            }
+          });
+
+          const coordinates = shipGroup.map((ship) => [ship.lon, ship.lat]);
+          const routeId = `line-${lastShip.imo}-${lastShip.mmsi}`;
+          setCurrentRouteId(routeId); // Yeni rota ID'sini güncelle
+
+          // Yeni kaynak ekleniyor
           map.addSource(routeId, {
             type: "geojson",
             data: {
               type: "Feature",
               geometry: {
                 type: "LineString",
-                coordinates,
+                coordinates: coordinates,
               },
             },
           });
 
+          // Yeni katman ekleniyor
           map.addLayer({
             id: routeId,
             type: "line",
             source: routeId,
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+            },
             paint: {
-              "line-color": "#FF5733",
-              "line-width": 3,
-              "line-opacity": 0.6,
+              "line-color": "#FF5733", 
+              "line-width": 2,         
             },
           });
-        }
 
-        const lastShip = group[group.length - 1];
-
-        const popupContent = `
-          ${lastShip.photoUrl ? `<div style="text-align: center;">
-            <img src="${lastShip.photoUrl}" alt="${lastShip.name}" style="width: 100%; max-width: 200px; margin-bottom: 10px;" />
-          </div>` : ""}
-          <strong>${lastShip.name}</strong><br /> 
-          <strong>${lastShip.type}</strong><br />
-          Bayrak: ${lastShip.nation} <br />
-          Boyut: ${lastShip.size} <br />
-          Hız: ${lastShip.speed} <br />
-          Yıl: ${lastShip.year} <br />
-          Tarih: ${new Date(lastShip.date).toLocaleString()} <br />
-          MMSI: ${lastShip.mmsi}<br />
-          Durum: ${lastShip.status === 1 ? "Başarılı" : lastShip.statusDetail}
-        `;
-
-        const popup = new Popup().setHTML(popupContent);
-
-        const markerElement = document.createElement("img");
-        markerElement.src = "ship.png";
-        markerElement.style.width = "16px";
-        markerElement.style.height = "16px";
-
-        new Marker({ element: markerElement })
-          .setLngLat([lastShip.long, lastShip.lat])
-          .setPopup(popup)
-          .addTo(map);
+          // Update the selected ship in the sidebar
+          onMarkerClick(lastShip);  // Pass the selected ship to the parent
+        });
       });
     });
 
     return () => {
       map.remove();
     };
-  }, [ships]);
+  }, [ships, onMarkerClick]);
 
   return <div ref={mapContainerRef} style={{ height: "100%", width: "100%" }} />;
 };
