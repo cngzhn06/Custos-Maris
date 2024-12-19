@@ -18,7 +18,7 @@ app.use(cors());
 
 const run = async () => {
   await consumer.connect();
-  await consumer.subscribe({ topic: 'topic_1', fromBeginning: false });
+  await consumer.subscribe({ topic: 'ship', fromBeginning: false });
 
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {

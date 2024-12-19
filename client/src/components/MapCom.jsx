@@ -38,7 +38,6 @@ const MapWithBounds = ({ ships, onMarkerClick }) => {
           <strong>Konum:</strong> Lat: ${lastShip.lat}, Long: ${lastShip.lon}<br />
           <strong>Yön:</strong> ${lastShip.course}°<br />
           <strong>Başlangıç Limanı:</strong> ${lastShip.departurePort}<br />
-          <strong>Varış Limanı:</strong> ${lastShip.arrivalPortCalc}<br />
           <strong>IMO:</strong> ${lastShip.imo}<br />
           <strong>MMSI:</strong> ${lastShip.mmsi}<br />
           <strong>Zaman Damgası:</strong> ${lastShip.timestamp}
@@ -48,8 +47,8 @@ const MapWithBounds = ({ ships, onMarkerClick }) => {
 
         const markerElement = document.createElement("img");
         markerElement.src = "ship.png"; 
-        markerElement.style.width = "16px";
-        markerElement.style.height = "16px";
+        markerElement.style.width = "20px";
+        markerElement.style.height = "20px";
 
         const marker = new Marker({ element: markerElement })
           .setLngLat([lastShip.lon, lastShip.lat])
