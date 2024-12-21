@@ -1,9 +1,28 @@
 import React from "react";
 
-const RSideBar = ({ ship }) => {
+const RSideBar = ({ ship, onShowFullRoute, showFullRoute }) => {
+  if (!ship) {
+    return null; // Eğer bir gemi seçilmediyse, hiçbir şey render edilmesin
+  }
+
+  const handleFullRouteClick = () => {
+    if (showFullRoute === "fullRoute") {
+      onShowFullRoute(null); // Tüm rotayı gizle
+    } else {
+      onShowFullRoute("fullRoute"); // Tüm rotayı göster
+    }
+  };
+
+  const handleLastHourRouteClick = () => {
+    if (showFullRoute === "lastHourRoute") {
+      onShowFullRoute(null); // Son 1 saati gizle
+    } else {
+      onShowFullRoute("lastHourRoute"); // Son 1 saati göster
+    }
+  };
+
   return (
     <div className="w-1/5 bg-sidebar-color p-6 text-white flex flex-col justify-between">
-      {/* Ship Details */}
       <div>
         <p className="text-navbar-color text-xl font-bold mb-2">
           {ship.name || "Ship Name"}
@@ -62,19 +81,34 @@ const RSideBar = ({ ship }) => {
             </p>
           </div>
         </div>
-        <div className="flex gap-2 mt-6">
-          <button className="bg-[#4A90E2] hover:bg-[#357ABD] text-white font-bold py-2 px-4 rounded w-full">
+        <div className="flex flex-col gap-4 mt-6 items-center">
+          <button
+            className={`${
+              showFullRoute === "lastHourRoute"
+                ? "bg-[#5b6e2c] hover:bg-[#4A702D]"
+                : "bg-navbar-color hover:bg-[#b8ae79] text-sidebar-color"
+            } font-bold py-3 px-6 rounded-lg w-64 transition duration-300 shadow-md`}
+            onClick={handleLastHourRouteClick}
+          >
             Son 1 Saat
           </button>
-          <button className="bg-[#E94E77] hover:bg-[#D13A5A] text-white font-bold py-2 px-4 rounded w-full">
-            Tüm Hareketler
+          <button
+            className={`${
+              showFullRoute === "fullRoute"
+                ? "bg-[#5b6e2c] hover:bg-[#4A702D]"
+                : "bg-navbar-color hover:bg-[#b8ae79] text-sidebar-color"
+            } font-bold py-3 px-6 rounded-lg w-64 transition duration-300 shadow-md`}
+            onClick={handleFullRouteClick}
+          >
+            {showFullRoute === "fullRoute" ? "Rota Gizle" : "Tüm Hareketler"}
           </button>
         </div>
       </div>
 
-
       <div
-        className={"text-center py-2 rounded-md font-bold bg-navbar-color text-sidebar-color"}
+        className={
+          "text-center py-2 rounded-md font-bold bg-navbar-color text-sidebar-color"
+        }
       >
         <p>{ship.anomalyStatus || "ANORMALİ YOK"}</p>
       </div>

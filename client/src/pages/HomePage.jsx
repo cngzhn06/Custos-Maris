@@ -7,7 +7,11 @@ import RSideBar from "../components/RSideBar";
 const HomePage = () => {
   const [shipList, setShipList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedShip, setSelectedShip] = useState(null); // State for the selected ship
+  const [selectedShip, setSelectedShip] = useState(null);
+  const [showFullRoute, setShowFullRoute] = useState(false);
+  const handleFullRouteToggle = (mode) => {
+    setShowFullRoute(mode); // Set mode as either 'fullRoute' or 'lastHourRoute'
+  };
 
   useEffect(() => {
     const fetchShipsData = async () => {
@@ -17,8 +21,6 @@ const HomePage = () => {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
-        console.log("🚀 ~ fetchShipsData ~ data:", data)
-
         const formattedShips = data.map((ship) => ({
           shipId: ship.SHIP_ID,
           shipType: ship.SHIPTYPE,
@@ -62,9 +64,20 @@ const HomePage = () => {
           <div className="flex flex-1">
             <LSidebar />
             <div className="w-5/6 mt-4 ml-1">
-              <MapWithBounds ships={shipList} onMarkerClick={setSelectedShip} />
+              <MapWithBounds
+                ships={shipList}
+                onMarkerClick={setSelectedShip}
+                showFullRoute={showFullRoute}
+                selectedShip={selectedShip}
+              />
             </div>
-            {selectedShip && <RSideBar ship={selectedShip} />}
+            {selectedShip && (
+              <RSideBar
+                ship={selectedShip}
+                onShowFullRoute={handleFullRouteToggle}
+                showFullRoute={showFullRoute}
+              />
+            )}
           </div>
         </div>
       </div>

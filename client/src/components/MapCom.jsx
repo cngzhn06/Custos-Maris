@@ -2,10 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { Map, Marker, Popup } from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 
-const MapWithBounds = ({ ships, onMarkerClick }) => {
+const MapWithBounds = ({
+  ships,
+  onMarkerClick,
+  showFullRoute,
+  selectedShip,
+}) => {
   const mapContainerRef = useRef(null);
   const [mapInstance, setMapInstance] = useState(null);
-  const [currentRouteId, setCurrentRouteId] = useState(null);
+  const [routeLayerId, setRouteLayerId] = useState(null); // Track route layer ID
 
   useEffect(() => {
     const map = new Map({
@@ -46,7 +51,7 @@ const MapWithBounds = ({ ships, onMarkerClick }) => {
         const popup = new Popup().setHTML(popupContent);
 
         const markerElement = document.createElement("img");
-        markerElement.src = "ship.png"; 
+        markerElement.src = "ship.png"; // Gemi simgesi
         markerElement.style.width = "20px";
         markerElement.style.height = "20px";
 
@@ -56,47 +61,8 @@ const MapWithBounds = ({ ships, onMarkerClick }) => {
           .addTo(map);
 
         marker.getElement().addEventListener("click", () => {
-          // Tüm mevcut rotaları temizle
-          map.getStyle().layers.forEach((layer) => {
-            if (layer.id.startsWith("line-")) {
-              map.removeLayer(layer.id); 
-              map.removeSource(layer.id); 
-            }
-          });
-
-          const coordinates = shipGroup.map((ship) => [ship.lon, ship.lat]);
-          const routeId = `line-${lastShip.imo}-${lastShip.mmsi}`;
-          setCurrentRouteId(routeId); // Yeni rota ID'sini güncelle
-
-          // Yeni kaynak ekleniyor
-          map.addSource(routeId, {
-            type: "geojson",
-            data: {
-              type: "Feature",
-              geometry: {
-                type: "LineString",
-                coordinates: coordinates,
-              },
-            },
-          });
-
-          // Yeni katman ekleniyor
-          map.addLayer({
-            id: routeId,
-            type: "line",
-            source: routeId,
-            layout: {
-              "line-join": "round",
-              "line-cap": "round",
-            },
-            paint: {
-              "line-color": "#FF5733", 
-              "line-width": 2,         
-            },
-          });
-
-          // Update the selected ship in the sidebar
-          onMarkerClick(lastShip);  // Pass the selected ship to the parent
+          // Marker tıklandığında gemi bilgilerini sidebar'a aktar
+          onMarkerClick(lastShip);
         });
       });
     });
@@ -106,7 +72,61 @@ const MapWithBounds = ({ ships, onMarkerClick }) => {
     };
   }, [ships, onMarkerClick]);
 
-  return <div ref={mapContainerRef} style={{ height: "100%", width: "100%" }} />;
+  useEffect(() => {
+    if (!mapInstance || !selectedShip) return;
+  
+    if (routeLayerId) {
+      mapInstance.removeLayer(routeLayerId);
+      mapInstance.removeSource(routeLayerId);
+      setRouteLayerId(null);
+    }
+  
+    if (!showFullRoute) return;
+  
+    const shipGroup = ships.filter(
+      (ship) => ship.imo === selectedShip.imo && ship.mmsi === selectedShip.mmsi
+    );
+  
+    const coordinates =
+      showFullRoute === "lastHourRoute"
+        ? shipGroup.slice(-20).map((ship) => [ship.lon, ship.lat]) // Last 20 points
+        : shipGroup.map((ship) => [ship.lon, ship.lat]); // Full route
+  
+    if (coordinates.length === 0) return;
+  
+    const newRouteLayerId = `line-${selectedShip.imo}-${selectedShip.mmsi}`;
+    setRouteLayerId(newRouteLayerId);
+  
+    // Add new source and layer
+    mapInstance.addSource(newRouteLayerId, {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: coordinates,
+        },
+      },
+    });
+  
+    mapInstance.addLayer({
+      id: newRouteLayerId,
+      type: "line",
+      source: newRouteLayerId,
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
+      paint: {
+        "line-color": "#FF5733", // Adjust color as needed
+        "line-width": 2, // Adjust width as needed
+      },
+    });
+  }, [showFullRoute, selectedShip, ships, mapInstance]);
+  
+  return (
+    <div ref={mapContainerRef} style={{ height: "100%", width: "100%" }} />
+  );
 };
 
 export default MapWithBounds;
