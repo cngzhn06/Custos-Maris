@@ -7,17 +7,17 @@ const RSideBar = ({ ship, onShowFullRoute, showFullRoute }) => {
 
   const handleFullRouteClick = () => {
     if (showFullRoute === "fullRoute") {
-      onShowFullRoute(null); // Tüm rotayı gizle
+      onShowFullRoute(null); 
     } else {
-      onShowFullRoute("fullRoute"); // Tüm rotayı göster
+      onShowFullRoute("fullRoute"); 
     }
   };
 
   const handleLastHourRouteClick = () => {
     if (showFullRoute === "lastHourRoute") {
-      onShowFullRoute(null); // Son 1 saati gizle
+      onShowFullRoute(null); 
     } else {
-      onShowFullRoute("lastHourRoute"); // Son 1 saati göster
+      onShowFullRoute("lastHourRoute"); 
     }
   };
 
@@ -90,7 +90,7 @@ const RSideBar = ({ ship, onShowFullRoute, showFullRoute }) => {
             } font-bold py-3 px-6 rounded-lg w-64 transition duration-300 shadow-md`}
             onClick={handleLastHourRouteClick}
           >
-            Son 1 Saat
+            {showFullRoute === "lastHourRoute" ? "Rota Gizle" : "Son 1 Saat"}
           </button>
           <button
             className={`${

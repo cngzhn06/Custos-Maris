@@ -18,23 +18,27 @@ app.use(cors());
 
 const run = async () => {
   await consumer.connect();
-  await consumer.subscribe({ topic: 'ship', fromBeginning: false });
+  console.log('Consumer connected');
+
+  await consumer.subscribe({ topic: 'topic6', fromBeginning: false });
+  console.log('Subscribed to topic: topic');
 
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
+      console.log('Processing message...');
       const messageContent = message.value.toString();
-      console.log(`Received message: ${messageContent}`); 
+      console.log(`Received message: ${messageContent}`);
 
       try {
-        const jsonMessage = JSON.parse(messageContent); 
-
-        messages.push(jsonMessage); 
+        const jsonMessage = JSON.parse(messageContent);
+        messages.push(jsonMessage);
       } catch (error) {
-        console.error("Error parsing message:", error);
+        console.error('Error parsing message:', error);
       }
     },
   });
 };
+
 
 app.get('/messages', (req, res) => {
   res.json(messages);  

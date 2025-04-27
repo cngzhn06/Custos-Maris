@@ -10,7 +10,7 @@ const MapWithBounds = ({
 }) => {
   const mapContainerRef = useRef(null);
   const [mapInstance, setMapInstance] = useState(null);
-  const [routeLayerId, setRouteLayerId] = useState(null); // Track route layer ID
+  const [routeLayerId, setRouteLayerId] = useState(null);
 
   useEffect(() => {
     const map = new Map({
@@ -57,7 +57,6 @@ const MapWithBounds = ({
 
         const marker = new Marker({ element: markerElement })
           .setLngLat([lastShip.lon, lastShip.lat])
-          .setPopup(popup)
           .addTo(map);
 
         marker.getElement().addEventListener("click", () => {
