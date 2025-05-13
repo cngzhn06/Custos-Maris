@@ -10,9 +10,21 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedShip, setSelectedShip] = useState(null);
   const [showFullRoute, setShowFullRoute] = useState(null);
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 
   const handleFullRouteToggle = (mode) => {
     setShowFullRoute(mode);
+  };
+
+  const handleShipSelect = (ship) => {
+    if (selectedShip && selectedShip.imo === ship.imo && selectedShip.mmsi === ship.mmsi) {
+      setSelectedShip(null);
+      setRightSidebarOpen(false);
+    } else {
+      setSelectedShip(ship);
+      setRightSidebarOpen(true);
+    }
   };
 
   useEffect(() => {
@@ -23,6 +35,8 @@ const HomePage = () => {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
+        console.log(data);
+        
         const formattedShips = data.map((ship) => ({
           shipId: ship.SHIP_ID,
           name: ship.NAME || "Unknown Ship",
@@ -55,47 +69,45 @@ const HomePage = () => {
   }, []);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">
-      <div className="text-xl font-bold">Loading...</div>
-    </div>;
+    return (
+      <div className="flex justify-center items-center h-screen bg-sidebar-color">
+        <div className="text-2xl font-bold text-navbar-color">Yükleniyor...</div>
+      </div>
+    );
   }
 
   return (
-    <>
-      <div className="min-h-screen flex flex-col">
-        <div>
-          <Navbar />
+    <div className="h-screen flex flex-col bg-sidebar-color">
+      <Navbar />
+      <div className="flex flex-1 mt-20">
+        <LSidebar 
+          ships={shipList} 
+          onSearchResults={setFilteredShips}
+          onFilterChange={setFilteredShips}
+          isOpen={leftSidebarOpen}
+          onToggle={() => setLeftSidebarOpen(!leftSidebarOpen)}
+        />
+        
+        <div className={`flex-1 transition-all duration-300`}>
+          <MapWithBounds
+            ships={filteredShips}
+            onMarkerClick={handleShipSelect}
+            showFullRoute={showFullRoute}
+            selectedShip={selectedShip}
+          />
         </div>
-        <div className="flex flex-col flex-1 mt-16">
-          <div className="flex flex-1">
-            <LSidebar 
-              ships={shipList} 
-              onSearchResults={setFilteredShips}
-              onFilterChange={setFilteredShips}
-            />
-            <div className="w-3/5 mt-4 ml-1">
-              <MapWithBounds
-                ships={filteredShips}
-                onMarkerClick={setSelectedShip}
-                showFullRoute={showFullRoute}
-                selectedShip={selectedShip}
-              />
-            </div>
-            {selectedShip ? (
-              <RSideBar
-                ship={selectedShip}
-                onShowFullRoute={handleFullRouteToggle}
-                showFullRoute={showFullRoute}
-              />
-            ) : (
-              <div className="w-1/5 bg-sidebar-color p-6 text-white flex flex-col justify-center items-center">
-                <p className="text-navbar-color text-lg">Gemi seçiniz</p>
-              </div>
-            )}
-          </div>
-        </div>
+        
+        {selectedShip && (
+          <RSideBar
+            ship={selectedShip}
+            onShowFullRoute={handleFullRouteToggle}
+            showFullRoute={showFullRoute}
+            isOpen={rightSidebarOpen}
+            onToggle={() => setRightSidebarOpen(!rightSidebarOpen)}
+          />
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

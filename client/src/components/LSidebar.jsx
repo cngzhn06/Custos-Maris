@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const LSidebar = ({ ships, onSearchResults, onFilterChange }) => {
+const LSidebar = ({ ships, onSearchResults, onFilterChange, isOpen, onToggle }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchType, setSearchType] = useState("name");
   const [activeFilter, setActiveFilter] = useState("all");
@@ -55,87 +57,52 @@ const LSidebar = ({ ships, onSearchResults, onFilterChange }) => {
   };
 
   return (
-    <div className="w-1/5 bg-sidebar-color p-4 text-navbar-color">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold mb-4">Gemi Arama</h2>
-        
-        <div className="relative mb-4">
-          <input
-            type="text"
-            placeholder={`Search by ${searchType}...`}
-            className="w-full p-2 pl-10 rounded-lg bg-navbar-color text-sidebar-color focus:outline-none"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyPress={handleKeyPress}
-          />
-          <SearchIcon className="absolute left-3 top-3 text-sidebar-color" />
-        </div>
-        
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Arama Türü:</label>
-          <select
-            className="w-full p-2 rounded-lg bg-navbar-color text-sidebar-color focus:outline-none"
-            value={searchType}
-            onChange={(e) => setSearchType(e.target.value)}
-          >
-            <option value="name">Gemi Adı</option>
-            <option value="imo">IMO</option>
-            <option value="mmsi">MMSI</option>
-            <option value="shipType">Gemi Türü</option>
-          </select>
-        </div>
-        
-        <button
-          className="w-full bg-navbar-color text-sidebar-color py-2 rounded-lg font-bold hover:bg-[#b8ae79] transition duration-300 mb-6"
-          onClick={handleSearch}
-        >
-          Ara
-        </button>
-
-        <h2 className="text-xl font-bold mb-4">Gemi Filtrele</h2>
-        <div className="flex flex-row flex-wrap gap-2 mb-4">
+    <div className={`${isOpen ? 'w-72' : 'w-12'} bg-sidebar-color h-[calc(100vh-4rem)] flex relative transition-all duration-300`}>
+      <div className={`${isOpen ? 'flex flex-col w-full' : 'hidden'} h-full`}>
+        <div className="p-4 text-navbar-color flex-1 overflow-y-auto">
+          <h2 className="text-2xl font-bold mb-6 text-center">Gemi Arama</h2>
+          
+          <div className="relative mb-6">
+            <input
+              type="text"
+              placeholder={`${searchType} ile ara`}
+              className="w-full p-3 pl-11 rounded-xl bg-navbar-color text-sidebar-color focus:outline-none focus:ring-2 focus:ring-[#4A702D] shadow-lg"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
+            <SearchIcon className="absolute left-3 top-3.5 text-sidebar-color" />
+          </div>
+          
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2 text-navbar-color">Arama Türü:</label>
+            <select
+              className="w-full p-3 rounded-xl bg-navbar-color text-sidebar-color focus:outline-none focus:ring-2 focus:ring-[#4A702D] shadow-lg"
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+            >
+              <option value="name">Gemi Adı</option>
+              <option value="imo">IMO</option>
+              <option value="mmsi">MMSI</option>
+              <option value="shipType">Gemi Türü</option>
+            </select>
+          </div>
+          
           <button
-            onClick={() => filterShips("all")}
-            className={`py-2 px-3 rounded-lg font-bold text-sm ${
-              activeFilter === "all" 
-                ? "bg-[#4A702D] text-white" 
-                : "bg-navbar-color text-sidebar-color hover:bg-[#b8ae79]"
-            }`}
+            className="w-full bg-[#4A702D] text-white py-3 rounded-xl font-bold hover:bg-[#5b6e2c] transition duration-300 shadow-lg"
+            onClick={handleSearch}
           >
-            Tümü
-          </button>
-          <button
-            onClick={() => filterShips("yolcu")}
-            className={`py-2 px-3 rounded-lg font-bold text-sm ${
-              activeFilter === "yolcu" 
-                ? "bg-[#4A702D] text-white" 
-                : "bg-navbar-color text-sidebar-color hover:bg-[#b8ae79]"
-            }`}
-          >
-            Yolcu
-          </button>
-          <button
-            onClick={() => filterShips("donanma")}
-            className={`py-2 px-3 rounded-lg font-bold text-sm ${
-              activeFilter === "donanma" 
-                ? "bg-[#4A702D] text-white" 
-                : "bg-navbar-color text-sidebar-color hover:bg-[#b8ae79]"
-            }`}
-          >
-            Donanma
-          </button>
-          <button
-            onClick={() => filterShips("kargo")}
-            className={`py-2 px-3 rounded-lg font-bold text-sm ${
-              activeFilter === "kargo" 
-                ? "bg-[#4A702D] text-white" 
-                : "bg-navbar-color text-sidebar-color hover:bg-[#b8ae79]"
-            }`}
-          >
-            Kargo
+            Ara
           </button>
         </div>
       </div>
+
+      <button 
+        onClick={onToggle}
+        className="absolute -right-4 top-1/2 transform -translate-y-1/2 bg-sidebar-color text-navbar-color hover:bg-navbar-color hover:text-sidebar-color transition-colors rounded-full p-1 shadow-lg z-10"
+      >
+        {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+      </button>
     </div>
   );
 };
