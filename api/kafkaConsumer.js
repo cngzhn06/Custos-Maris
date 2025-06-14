@@ -20,7 +20,7 @@ const run = async () => {
   await consumer.connect();
   console.log('Consumer connected');
 
-  await consumer.subscribe({ topic: 'topic9', fromBeginning: false });
+  await consumer.subscribe({ topic: 'topic1', fromBeginning: false });
   console.log('Subscribed to topic: topic');
 
   await consumer.run({

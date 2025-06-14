@@ -128,7 +128,7 @@ const RSideBar = ({
           </div>
 
           <div className="mt-6 text-center py-3 rounded-xl font-bold bg-[#1a2634] text-sidebar-color shadow-lg">
-            <p>{ship.anomalyStatus || "ANORMALİ YOK"}</p>
+            <p>{ship.anomalyStatus || "ANOMALİ YOK"}</p>
           </div>
         </div>
       ) : (
