@@ -81,7 +81,6 @@ const LSidebar = ({ ships, onSearchResults, onFilterChange, isOpen, onToggle }) 
               value={searchType}
               onChange={(e) => setSearchType(e.target.value)}
             >
-              <option value="name">Gemi Adı</option>
               <option value="imo">IMO</option>
               <option value="mmsi">MMSI</option>
               <option value="shipType">Gemi Türü</option>

@@ -10,7 +10,7 @@ const kafka = new Kafka({
   brokers: ['localhost:9092'],
 });
 
-const consumer = kafka.consumer({ groupId: 'my-group' });
+const consumer = kafka.consumer({ groupId: 'my-group-' + Date.now() }); // her seferinde yeni bir groupId
 
 let messages = [];
 
@@ -20,7 +20,7 @@ const run = async () => {
   await consumer.connect();
   console.log('Consumer connected');
 
-  await consumer.subscribe({ topic: 'topic1', fromBeginning: false });
+  await consumer.subscribe({ topic: 'topic2', fromBeginning: true });
   console.log('Subscribed to topic: topic');
 
   await consumer.run({
